@@ -87,6 +87,12 @@ Type 'help' to see the commands I know.
 
 ![RuleBot Chat Screen](screenshots/chat.png)
 
+---
+
+## 🌐 Live Demo
+
+**RuleBot:**  
+https://rohan25794.github.io/DecodeLabs-internship/
 
 ---
 
@@ -128,10 +134,11 @@ When a user enters a message:
 No installation is required.
 
 1. Download or clone this repository.
-2. Open `index.html`.
-3. Open it in a web browser.
-4. Click **Start Chatting**.
-5. Start talking to RuleBot.
+2. Open the project folder.
+3. Open `index.html`.
+4. Open it in a web browser.
+5. Click **Start Chatting**.
+6. Start talking to RuleBot.
 
 ---
 
@@ -141,12 +148,24 @@ No installation is required.
 RuleBot/
 │
 ├── index.html
+├── style.css
+├── script.js
 ├── README.md
 │
 └── screenshots/
     ├── landing.png
     └── chat.png
 ```
+
+### File Description
+
+| File | Purpose |
+|---|---|
+| `index.html` | Main webpage structure |
+| `style.css` | Styling and responsive design |
+| `script.js` | RuleBot chatbot logic |
+| `README.md` | Project documentation |
+| `screenshots/` | Project screenshots |
 
 ---
 
@@ -176,8 +195,10 @@ While building this project, I got practical experience with:
 - User input
 - CSS layouts
 - Building an interactive UI
+- Separating HTML, CSS, and JavaScript
 - Organizing a project for GitHub
 - Writing a README file
+- Using Git and GitHub
 
 ---
 
