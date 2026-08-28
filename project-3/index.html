@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Stack Recommender — DecodeLabs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef1f5;
+    --grid:#d7dfe8;
+    --ink:#16283f;
+    --ink-soft:#5a7086;
+    --ink-faint:#93a5b8;
+    --accent:#cf5a1e;
+    --accent-soft:#f4e2d3;
+    --accent-deep:#a84410;
+    --card:#ffffff;
+    --line:#a9b9c9;
+    --ok:#2f7d5a;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/28px 28px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/28px 28px,
+      var(--bg);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+
+  /* ---------- Blueprint frame ---------- */
+  .sheet{
+    max-width:1180px;
+    margin:0 auto;
+    padding:22px 22px 40px;
+  }
+  .frame{
+    border:1.5px solid var(--line);
+    position:relative;
+    padding:34px clamp(18px, 4vw, 48px) 24px;
+    background:rgba(255,255,255,0.35);
+  }
+  .tick{
+    position:absolute;
+    width:14px; height:14px;
+    border:1.5px solid var(--ink);
+  }
+  .tick.tl{ top:-1.5px; left:-1.5px; border-right:none; border-bottom:none; }
+  .tick.tr{ top:-1.5px; right:-1.5px; border-left:none; border-bottom:none; }
+  .tick.bl{ bottom:-1.5px; left:-1.5px; border-right:none; border-top:none; }
+  .tick.br{ bottom:-1.5px; right:-1.5px; border-left:none; border-top:none; }
+
+  .frame-label{
+    position:absolute;
+    font-size:10px;
+    letter-spacing:.12em;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+  }
+  .frame-label.top-left{ top:8px; left:34px; }
+  .frame-label.top-right{ top:8px; right:34px; }
+  .frame-label.bottom-left{ bottom:8px; left:34px; }
+  .frame-label.bottom-right{ bottom:8px; right:34px; }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:24px;
+    border-bottom:1.5px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:30px;
+    flex-wrap:wrap;
+  }
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--accent-deep);
+    margin:0 0 8px;
+    font-weight:700;
+  }
+  h1{
+    margin:0;
+    font-size:clamp(28px, 4vw, 40px);
+    font-weight:800;
+    letter-spacing:-0.01em;
+    line-height:1.05;
+  }
+  h1 span{ color:var(--accent); }
+  .subhead{
+    max-width:420px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.5;
+    text-align:right;
+  }
+  @media (max-width:640px){
+    .subhead{ text-align:left; }
+  }
+
+  /* ---------- Layout ---------- */
+  .grid-main{
+    display:grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap:28px;
+  }
+  @media (max-width:860px){
+    .grid-main{ grid-template-columns:1fr; }
+  }
+
+  .panel-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    font-weight:700;
+    margin-bottom:14px;
+  }
+  .panel-title .num{
+    width:20px; height:20px;
+    border:1.5px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px;
+    color:var(--ink);
+    flex-shrink:0;
+  }
+  .panel-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  /* ---------- Input console ---------- */
+  .console{
+    background:var(--card);
+    border:1.5px solid var(--ink);
+    padding:22px;
+  }
+  .field-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+    font-weight:600;
+  }
+  .chip-input-wrap{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    border:1.5px solid var(--line);
+    padding:10px;
+    min-height:52px;
+    align-items:center;
+    background:#fbfcfe;
+  }
+  .chip-input-wrap:focus-within{ border-color:var(--accent); }
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--accent-soft);
+    border:1px solid var(--accent);
+    color:var(--accent-deep);
+    padding:5px 8px 5px 10px;
+    font-size:12.5px;
+    font-weight:600;
+    border-radius:2px;
+    white-space:nowrap;
+  }
+  .chip button{
+    all:unset;
+    cursor:pointer;
+    font-size:14px;
+    line-height:1;
+    padding:0 2px;
+    color:var(--accent-deep);
+  }
+  #skillInput{
+    border:none;
+    outline:none;
+    background:transparent;
+    flex:1;
+    min-width:140px;
+    font-size:14px;
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    padding:4px;
+  }
+  .hint{
+    font-size:11.5px;
+    color:var(--ink-faint);
+    margin-top:8px;
+  }
+  .hint.warn{ color:var(--accent-deep); }
+
+  .quick-adds{
+    display:flex; flex-wrap:wrap; gap:6px;
+    margin-top:14px;
+  }
+  .quick-add{
+    font-size:11.5px;
+    padding:5px 10px;
+    border:1px dashed var(--line);
+    color:var(--ink-soft);
+    background:transparent;
+    cursor:pointer;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .quick-add:hover{ border-color:var(--accent); color:var(--accent-deep); }
+
+  .run-btn{
+    width:100%;
+    margin-top:20px;
+    padding:14px;
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    transition:background .15s ease;
+  }
+  .run-btn:hover{ background:var(--accent-deep); }
+  .run-btn:disabled{ background:var(--ink-faint); cursor:not-allowed; }
+
+  /* ---------- Pipeline strip ---------- */
+  .pipeline{
+    display:flex;
+    margin-top:18px;
+    border:1px solid var(--line);
+  }
+  .pipeline .step{
+    flex:1;
+    text-align:center;
+    padding:9px 4px;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    font-family:'JetBrains Mono', monospace;
+    border-right:1px solid var(--line);
+    position:relative;
+    transition:color .2s ease, background .2s ease;
+  }
+  .pipeline .step:last-child{ border-right:none; }
+  .pipeline .step.active{
+    color:#fff;
+    background:var(--accent);
+  }
+
+  /* ---------- Results / gauge panel ---------- */
+  .readout{
+    background:var(--card);
+    border:1.5px solid var(--ink);
+    padding:22px;
+    min-height:420px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .gauge-zone{
+    text-align:center;
+    padding:6px 0 10px;
+    border-bottom:1px dashed var(--line);
+    margin-bottom:18px;
+  }
+  .gauge-caption{
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:2px;
+  }
+  .gauge-role{
+    font-size:15px;
+    font-weight:700;
+    margin-bottom:10px;
+    min-height:20px;
+  }
+  svg#gauge{ display:block; margin:0 auto; }
+  .gauge-score{
+    font-family:'JetBrains Mono', monospace;
+    font-size:26px;
+    font-weight:700;
+    fill:var(--ink);
+  }
+  .gauge-legend{
+    display:flex;
+    justify-content:space-between;
+    max-width:200px;
+    margin:0 auto;
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    color:var(--ink-faint);
+  }
+
+  .results-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    flex:1;
+  }
+  .result-row{
+    display:grid;
+    grid-template-columns:26px 1fr auto;
+    align-items:center;
+    gap:12px;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    background:#fbfcfe;
+    opacity:0;
+    transform:translateY(6px);
+    animation:riseIn .4s ease forwards;
+  }
+  .result-row.rank-1{ border-color:var(--accent); background:var(--accent-soft); }
+  @keyframes riseIn{ to{ opacity:1; transform:translateY(0); } }
+
+  .rank-num{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    color:var(--ink-faint);
+    text-align:center;
+  }
+  .rank-1 .rank-num{ color:var(--accent-deep); font-weight:700; }
+  .result-role{
+    font-size:14px;
+    font-weight:600;
+  }
+  .result-role small{
+    display:block;
+    font-weight:400;
+    font-size:11px;
+    color:var(--ink-soft);
+    margin-top:2px;
+    font-family:'JetBrains Mono', monospace;
+  }
+  .result-score{
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    text-align:right;
+  }
+
+  .empty-state{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:var(--ink-faint);
+    gap:10px;
+    padding:20px;
+  }
+  .empty-state .glyph{
+    width:46px; height:46px;
+    border:1.5px dashed var(--line);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+    color:var(--ink-faint);
+  }
+  .empty-state p{ font-size:12.5px; max-width:260px; line-height:1.5; margin:0; }
+
+  /* ---------- Footer note ---------- */
+  .footnote{
+    margin-top:22px;
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    font-size:10.5px;
+    color:var(--ink-faint);
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:.04em;
+  }
+
+  ::selection{ background:var(--accent-soft); color:var(--accent-deep); }
+
+  @media (max-width:560px){
+    .frame-label.top-left, .frame-label.top-right{ display:none; }
+    .frame{ padding-top:20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="frame">
+    <div class="tick tl"></div><div class="tick tr"></div>
+    <div class="tick bl"></div><div class="tick br"></div>
+    <div class="frame-label top-left">TSR-001 · CONTENT-BASED FILTER</div>
+    <div class="frame-label top-right">DECODELABS · PROJECT 3</div>
+    <div class="frame-label bottom-left">SCALE: 1 USER : N ROLES</div>
+    <div class="frame-label bottom-right">REV 2026.08</div>
+
+    <header>
+      <div>
+        <p class="eyebrow">Digital Matchmaker</p>
+        <h1>Tech Stack<br><span>Recommender</span></h1>
+      </div>
+      <p class="subhead">Enter three or more skills. The engine maps them into a TF‑IDF vector and measures the cosine angle against every job role on file — no history required.</p>
+    </header>
+
+    <div class="grid-main">
+      <!-- INPUT -->
+      <div>
+        <div class="panel-title"><span class="num">1</span>Ingestion</div>
+        <div class="console">
+          <div class="field-label">Your skills &amp; interests</div>
+          <div class="chip-input-wrap" id="chipWrap">
+            <input type="text" id="skillInput" placeholder="Type a skill, press Enter…" autocomplete="off">
+          </div>
+          <div class="hint" id="hint">0 of 3 minimum entered</div>
+
+          <div class="quick-adds" id="quickAdds"></div>
+
+          <button class="run-btn" id="runBtn" disabled>
+            ▸ Run Match Engine
+          </button>
+
+          <div class="pipeline">
+            <div class="step" data-step="1">Ingest</div>
+            <div class="step" data-step="2">Score</div>
+            <div class="step" data-step="3">Sort</div>
+            <div class="step" data-step="4">Filter</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTPUT -->
+      <div>
+        <div class="panel-title"><span class="num">2</span>Output — Top 3</div>
+        <div class="readout" id="readout">
+          <div class="gauge-zone">
+            <div class="gauge-caption">Best Alignment</div>
+            <div class="gauge-role" id="gaugeRole">—</div>
+            <svg id="gauge" width="220" height="130" viewBox="0 0 220 130">
+              <path d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="#d7dfe8" stroke-width="10"/>
+              <path id="gaugeArc" d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="#cf5a1e" stroke-width="10" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round"/>
+              <line id="needle" x1="110" y1="110" x2="110" y2="30" stroke="#16283f" stroke-width="2.5"/>
+              <circle cx="110" cy="110" r="5" fill="#16283f"/>
+              <text x="110" y="96" text-anchor="middle" class="gauge-score" id="gaugeScore">0%</text>
+            </svg>
+            <div class="gauge-legend">
+              <span>0° · NO MATCH</span>
+              <span>90° · PERFECT</span>
+            </div>
+          </div>
+
+          <div class="results-list" id="resultsList">
+            <div class="empty-state" id="emptyState">
+              <div class="glyph">?</div>
+              <p>Add at least 3 skills and run the engine to see ranked career-path matches.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footnote">
+      <span>ALGORITHM: TF‑IDF VECTOR MAPPING → COSINE SIMILARITY</span>
+      <span>DATASET: raw_skills.csv · 12 ROLES</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- Dataset (mirrors raw_skills.csv) ---------------- */
+const ROLES = [
+  { role:"Data Scientist", skills:"Python SQL Machine Learning Statistics Data Analysis Pandas NumPy Visualization" },
+  { role:"DevOps Engineer", skills:"AWS Docker Kubernetes CI/CD Automation Linux Cloud Computing Terraform" },
+  { role:"Backend Developer", skills:"Java Python SQL APIs Databases Microservices Spring Boot REST" },
+  { role:"Frontend Developer", skills:"JavaScript React CSS HTML UI Design Web Design TypeScript" },
+  { role:"Cloud Architect", skills:"AWS Cloud Computing Azure Networking Security Automation Kubernetes" },
+  { role:"Data Engineer", skills:"Python SQL ETL Apache Spark Data Pipelines Cloud Computing Airflow" },
+  { role:"Machine Learning Engineer", skills:"Python Machine Learning TensorFlow PyTorch Neural Networks Deep Learning Statistics" },
+  { role:"Full Stack Developer", skills:"JavaScript Python React Node.js SQL APIs Web Design Databases" },
+  { role:"Cybersecurity Analyst", skills:"Networking Security Linux Cryptography Threat Analysis Automation Python" },
+  { role:"Mobile App Developer", skills:"Java Kotlin Swift Mobile UI Design APIs Android iOS" },
+  { role:"Systems Administrator", skills:"Linux Networking Automation Cloud Computing Bash Scripting Security" },
+  { role:"Database Administrator", skills:"SQL Databases Data Modeling Backup Recovery Performance Tuning Oracle" },
+];
+
+const QUICK = ["Python","SQL","Cloud Computing","JavaScript","Machine Learning","Automation","Security","React"];
+
+/* ---------------- Minimal TF-IDF + Cosine Similarity ---------------- */
+function tokenize(str){
+  return str.toLowerCase().match(/[a-z0-9\+\#\.]+/g) || [];
+}
+
+function buildTfidf(docs){
+  const vocab = new Set();
+  const tokenized = docs.map(d => tokenize(d));
+  tokenized.forEach(tokens => tokens.forEach(t => vocab.add(t)));
+  const vocabArr = Array.from(vocab);
+
+  const df = {};
+  vocabArr.forEach(term => {
+    df[term] = tokenized.filter(tokens => tokens.includes(term)).length;
+  });
+
+  const N = docs.length;
+  function vectorize(tokens){
+    const tf = {};
+    tokens.forEach(t => tf[t] = (tf[t]||0) + 1);
+    const total = tokens.length || 1;
+    return vocabArr.map(term => {
+      const tfVal = (tf[term]||0) / total;
+      const idfVal = Math.log((N+1) / ((df[term]||0)+1)) + 1; // smoothed idf
+      return tfVal * idfVal;
+    });
+  }
+
+  return { vocabArr, vectorize, tokenized };
+}
+
+function cosineSim(a, b){
+  let dot=0, magA=0, magB=0;
+  for(let i=0;i<a.length;i++){
+    dot += a[i]*b[i];
+    magA += a[i]*a[i];
+    magB += b[i]*b[i];
+  }
+  if(magA===0 || magB===0) return 0;
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB));
+}
+
+const roleDocs = ROLES.map(r => r.skills);
+const model = buildTfidf(roleDocs);
+const roleVectors = roleDocs.map(doc => model.vectorize(tokenize(doc)));
+
+function recommend(userSkills, topN=3){
+  const userDoc = userSkills.join(" ");
+  const userVec = model.vectorize(tokenize(userDoc));
+  const scored = ROLES.map((r, i) => ({
+    role: r.role,
+    skills: r.skills,
+    score: cosineSim(userVec, roleVectors[i])
+  }));
+  scored.sort((a,b) => b.score - a.score);
+  return scored.slice(0, topN);
+}
+
+/* ---------------- UI wiring ---------------- */
+const chipWrap = document.getElementById('chipWrap');
+const skillInput = document.getElementById('skillInput');
+const hint = document.getElementById('hint');
+const runBtn = document.getElementById('runBtn');
+const quickAdds = document.getElementById('quickAdds');
+const resultsList = document.getElementById('resultsList');
+const emptyState = document.getElementById('emptyState');
+const gaugeRole = document.getElementById('gaugeRole');
+const gaugeArc = document.getElementById('gaugeArc');
+const needle = document.getElementById('needle');
+const gaugeScore = document.getElementById('gaugeScore');
+const steps = document.querySelectorAll('.pipeline .step');
+
+let skills = [];
+
+function renderChips(){
+  chipWrap.querySelectorAll('.chip').forEach(c => c.remove());
+  skills.forEach((s, idx) => {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.innerHTML = `${s}<button aria-label="remove">×</button>`;
+    chip.querySelector('button').onclick = () => {
+      skills.splice(idx, 1);
+      renderChips();
+    };
+    chipWrap.insertBefore(chip, skillInput);
+  });
+  const n = skills.length;
+  hint.textContent = n >= 3 ? `${n} skills entered — ready to run` : `${n} of 3 minimum entered`;
+  hint.classList.toggle('warn', n < 3);
+  runBtn.disabled = n < 3;
+}
+
+function addSkill(raw){
+  const val = raw.trim();
+  if(!val) return;
+  if(!skills.some(s => s.toLowerCase() === val.toLowerCase())) skills.push(val);
+  skillInput.value = '';
+  renderChips();
+}
+
+skillInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' || e.key === ','){
+    e.preventDefault();
+    addSkill(skillInput.value);
+  } else if(e.key === 'Backspace' && skillInput.value === '' && skills.length){
+    skills.pop();
+    renderChips();
+  }
+});
+chipWrap.addEventListener('click', () => skillInput.focus());
+
+QUICK.forEach(term => {
+  const btn = document.createElement('button');
+  btn.className = 'quick-add';
+  btn.type = 'button';
+  btn.textContent = '+ ' + term;
+  btn.onclick = () => addSkill(term);
+  quickAdds.appendChild(btn);
+});
+
+function animateSteps(cb){
+  let i = 0;
+  steps.forEach(s => s.classList.remove('active'));
+  const interval = setInterval(() => {
+    if(i > 0) steps[i-1].classList.remove('active');
+    if(i < steps.length){
+      steps[i].classList.add('active');
+      i++;
+    } else {
+      clearInterval(interval);
+      setTimeout(() => { steps.forEach(s=>s.classList.remove('active')); }, 350);
+      cb();
+    }
+  }, 260);
+}
+
+function setGauge(score, roleName){
+  const pct = Math.max(0, Math.min(1, score));
+  const circumference = 283; // approx path length for this arc
+  gaugeArc.style.strokeDashoffset = String(circumference * (1 - pct));
+
+  const angleDeg = 180 * (1 - pct); // 180deg = 0%, 0deg = 100%, sweeping to vertical
+  const rad = (angleDeg * Math.PI) / 180;
+  const cx = 110, cy = 110, r = 78;
+  const x2 = cx - r * Math.cos(rad);
+  const y2 = cy - r * Math.sin(rad);
+  needle.setAttribute('x2', x2.toFixed(1));
+  needle.setAttribute('y2', y2.toFixed(1));
+
+  gaugeScore.textContent = Math.round(pct * 100) + '%';
+  gaugeRole.textContent = roleName || '—';
+}
+
+function renderResults(results){
+  resultsList.querySelectorAll('.result-row').forEach(el => el.remove());
+  if(emptyState) emptyState.remove();
+
+  results.forEach((r, idx) => {
+    const row = document.createElement('div');
+    row.className = 'result-row' + (idx === 0 ? ' rank-1' : '');
+    row.style.animationDelay = (idx * 0.08) + 's';
+    row.innerHTML = `
+      <div class="rank-num">${idx+1}</div>
+      <div class="result-role">${r.role}<small>${r.skills.split(' ').slice(0,4).join(' · ')}</small></div>
+      <div class="result-score">${Math.round(r.score*100)}%</div>
+    `;
+    resultsList.appendChild(row);
+  });
+
+  setGauge(results[0] ? results[0].score : 0, results[0] ? results[0].role : null);
+}
+
+runBtn.addEventListener('click', () => {
+  if(skillInput.value.trim()) addSkill(skillInput.value);
+  if(skills.length < 3) return;
+  runBtn.disabled = true;
+  animateSteps(() => {
+    const results = recommend(skills, 3);
+    renderResults(results);
+    runBtn.disabled = false;
+  });
+});
+
+renderChips();
+</script>
+</body>
+</html>
